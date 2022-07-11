@@ -1,0 +1,17 @@
+
+* Intro
+
+This tool is to convert csv file (as exported from influxDB dashboard) to line protocol format.
+
+* API
+
+#+begin_quote
+CSV2LINE_TAGS: specify the csv columns to be tags
+CSV2LINE_FIELDS: specify the csv columns to be fields
+#+end_quote
+
+* Example
+
+#+begin_src bash
+CSV2LINE_TAGS=Modality CSV2LINE_FIELDS=BodyPartExamined,CodeMeaning,ProtocolName,PerformedProcedureStepDescription go run main.go ./2022-07-10_00_13_influxdb_data.csv output.txt
+#+end_src
