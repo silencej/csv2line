@@ -6,13 +6,13 @@ import (
 	"fmt"
 	// "io"
 	//  "io/ioutil"
-	"log"
-	"os"
-	//  "time"
 	"bufio"
 	"encoding/csv"
 	"github.com/urfave/cli/v2"
+	"log"
+	"os"
 	"strings"
+	"time"
 )
 
 var TAGS = "CSV2LINE_TAGS"
@@ -67,7 +67,7 @@ func readCsv(inputFile string) (output []map[string]string, err error) {
 }
 
 func writeCsv(outputFile string, records []map[string]string) {
-	f, err := os.OpenFile(outputFile, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(outputFile, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0644)
 	defer f.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -78,15 +78,22 @@ func writeCsv(outputFile string, records []map[string]string) {
 	var fields = strings.Split(os.ExpandEnv("${"+FIELDS+"}"), ",")
 	fmt.Printf("%q: %q\n", FIELDS, fields)
 
+	startTime := time.Now().Unix() - 10 ^ 6
 	writer := bufio.NewWriter(f)
 	for i := 0; i < len(records); i++ {
 		writer.WriteString(records[i]["_measurement"])
 		for _, tag := range tags {
 			writer.WriteString(fmt.Sprintf(",%v=\"%v\"", tag, records[i][tag]))
 		}
-		for _, field := range fields {
-			writer.WriteString(fmt.Sprintf(" %v=\"%v\"", field, records[i][field]))
+		writer.WriteString(" ")
+		for k, field := range fields {
+			if k == 0 {
+				writer.WriteString(fmt.Sprintf("%v=\"%v\"", field, records[i][field]))
+			} else {
+				writer.WriteString(fmt.Sprintf(",%v=\"%v\"", field, records[i][field]))
+			}
 		}
+		writer.WriteString(fmt.Sprintf(" %d", startTime+int64(i)))
 		writer.WriteString("\n")
 	}
 }
