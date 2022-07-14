@@ -78,7 +78,7 @@ func writeCsv(outputFile string, records []map[string]string) {
 	var fields = strings.Split(os.ExpandEnv("${"+FIELDS+"}"), ",")
 	fmt.Printf("%q: %q\n", FIELDS, fields)
 
-	startTime := time.Now().Unix() - 10 ^ 6
+	// startTime := time.Now().Unix() - 10 ^ 6
 	writer := bufio.NewWriter(f)
 	for i := 0; i < len(records); i++ {
 		writer.WriteString(records[i]["_measurement"])
@@ -93,9 +93,15 @@ func writeCsv(outputFile string, records []map[string]string) {
 				writer.WriteString(fmt.Sprintf(",%v=\"%v\"", field, records[i][field]))
 			}
 		}
-		writer.WriteString(fmt.Sprintf(" %d", startTime+int64(i)))
+		// writer.WriteString(fmt.Sprintf(" %d", startTime+int64(i)))
+		t, err := time.Parse(time.RFC3339Nano, records[i]["_time"])
+		if err != nil {
+			log.Fatal(err)
+		}
+		writer.WriteString(fmt.Sprintf(" %d", t.UnixNano()))
 		writer.WriteString("\n")
 	}
+	writer.Flush()
 }
 
 func main() {
